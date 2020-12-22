@@ -18,7 +18,7 @@ public class DBConfig {
     @Getter @Setter
     private String password;
     @Getter @Setter
-    private String databaseName;
+    private String database;
 
     public Integer getPort() {
         return Integer.valueOf(port);

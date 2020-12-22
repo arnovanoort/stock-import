@@ -42,6 +42,11 @@
             <artifactId>r2dbc-postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-pool</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>

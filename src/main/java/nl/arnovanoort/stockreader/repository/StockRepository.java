@@ -7,6 +7,7 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public interface StockRepository extends ReactiveCrudRepository<Stock, UUID> {
@@ -14,10 +15,10 @@ public interface StockRepository extends ReactiveCrudRepository<Stock, UUID> {
     @Query("select * from stock_market where stock_market_id = $1")
     Flux<StockMarket> getStockMarkets();
 
-    @Query("select * from stock where name = $1")
-    Mono<Stock> findStockByName(String name);
+    @Query("select * from stock where ticker = $1")
+    Mono<Stock> findStockByTicker(String ticker);
 
+    @Query("insert into stock values ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING")
+    Mono<Stock> create(UUID randomUUID, String name, String ticker, String assetType, String currency, LocalDate dateListedNullable, LocalDate dateUnListedNullable, UUID stockMarketId);
 
-//    @Query("select * from stock where stock_market_id = $1")
-//    Mono<StockPrize> createStockPrize(StockPrize stockPrize);
 }

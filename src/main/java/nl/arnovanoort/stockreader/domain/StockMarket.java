@@ -3,12 +3,14 @@ package nl.arnovanoort.stockreader.domain;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Persistable;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@ToString
 @EqualsAndHashCode
 public class StockMarket {
 

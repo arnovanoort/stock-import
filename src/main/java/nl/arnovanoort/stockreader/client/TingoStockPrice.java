@@ -46,17 +46,20 @@ public class TingoStockPrice {
     @Getter @Setter
     private Float low;
     @Getter @Setter
+    private Long volume;
+    @Getter @Setter
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
     @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     private LocalDateTime date;
 
     public TingoStockPrice() {} // needed for deserialisation
-    public TingoStockPrice(Float open, Float close, Float high, Float low, LocalDateTime date) {
-        this.open = open;
-        this.close = close;
-        this.high = high;
-        this.low = low;
-        this.date = date;
+    public TingoStockPrice(Float open, Float close, Float high, Float low, Long volume, LocalDateTime date) {
+        this.open   = open;
+        this.close  = close;
+        this.high   = high;
+        this.low    = low;
+        this.volume = volume;
+        this.date   = date;
     }
 
     public StockPrice toStockPrice(UUID stockId) {
@@ -65,6 +68,7 @@ public class TingoStockPrice {
             this.close,
             this.high,
             this.low,
+            this.volume,
             this.date,
             stockId
         );

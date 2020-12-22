@@ -16,6 +16,6 @@ public class TingoConfig {
     @Getter @Setter
     private String token;
     @Getter @Setter
-    private String supportedTickersZip;
+    private String supportedTickersZipLocation;
 
 }

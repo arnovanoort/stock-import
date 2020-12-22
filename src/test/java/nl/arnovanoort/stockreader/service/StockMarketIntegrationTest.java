@@ -2,6 +2,7 @@ package nl.arnovanoort.stockreader.service;
 
 import nl.arnovanoort.stockreader.controller.StockMarketController;
 import nl.arnovanoort.stockreader.domain.StockMarket;
+import nl.arnovanoort.stockreader.repository.StockMarketRepository;
 import org.flywaydb.core.Flyway;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,9 @@ public class StockMarketIntegrationTest {
 
     @Autowired
     private StockMarketService stockMarketService;
+
+    @Autowired
+    private StockMarketRepository stockMarketRepository;
 
     @Autowired
     WebTestClient webTestClient;
@@ -67,34 +71,52 @@ public class StockMarketIntegrationTest {
     @Test
     public void getStockMarketByUuid() throws Exception {
         UUID createdUuid = webTestClient
-                .post()
-                .uri("/stockmarkets")
-                .body(Mono.just(market), StockMarket.class)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .returnResult(StockMarket.class)
-                .getResponseBody()
-                .blockFirst()
-                .getId();
+            .post()
+            .uri("/stockmarkets")
+            .body(Mono.just(market), StockMarket.class)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .returnResult(StockMarket.class)
+            .getResponseBody()
+            .blockFirst()
+            .getId();
 
         FluxExchangeResult<StockMarket> result = webTestClient
-                .get()
-                .uri("/stockmarkets/" + createdUuid.toString())
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .returnResult(StockMarket.class)
-                ;
+            .get()
+            .uri("/stockmarkets/" + createdUuid.toString())
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .returnResult(StockMarket.class)
+            ;
 
         StepVerifier.create(result.getResponseBody())
-                .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
-                .verifyComplete();
+            .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
+            .verifyComplete();
+    }
+
+    @Test
+    public void getStockMarketByName() throws Exception {
+
+        Mono<StockMarket> foundMarket = stockMarketService.createStockMarket(market)
+            .flatMap(sm -> {
+                return stockMarketRepository.findByName(sm.getName());
+            });
+
+        StepVerifier.create(foundMarket)
+            .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
+            .verifyComplete();
     }
 
     @Test
     public void importStockPrices(){
-//        UUID createdUuid = webTestClient
+//        stockMarketService.createStockMarket(market).subscribe();
+//            .flatMap(sm -> {
+//                return stockMarketRepository.findUsingTheName(sm.getName());
+//            });
+
+        //        UUID createdUuid = webTestClient
 //            .post()
 //            .uri("/stockmarkets")
 //            .body(Mono.just(market), StockMarket.class)

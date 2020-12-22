@@ -4,28 +4,32 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@ToString
 @EqualsAndHashCode
 public class StockPrice {
 
     @Id
     @Getter @Setter
-    private UUID            id;
+    private UUID    id;
     @Getter @Setter
-    private Float           open;
+    private Float   open;
     @Getter @Setter
-    private Float           close;
+    private Float   close;
     @Getter @Setter
-    private Float           high;
+    private Float   high;
     @Getter @Setter
-    private Float           low;
+    private Float   low;
     @Getter @Setter
-    private UUID            stockId;
+    private Long    volume;
+    @Getter @Setter
+    private UUID    stockId;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
     @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
@@ -37,6 +41,7 @@ public class StockPrice {
         Float close,
         Float high,
         Float low,
+        Long volume,
         LocalDateTime date,
         UUID stockId)
     {
@@ -44,6 +49,7 @@ public class StockPrice {
         this.close      = close;
         this.high       = high;
         this.low        = low;
+        this.volume     = volume;
         this.date       = date;
         this.stockId    = stockId;
     }
