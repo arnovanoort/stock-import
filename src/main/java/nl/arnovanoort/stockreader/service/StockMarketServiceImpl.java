@@ -34,19 +34,19 @@ public class StockMarketServiceImpl implements StockMarketService {
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrizes(Date from, Date to) {
+    public Flux<StockPrice> updateStockPrices(Date from, Date to) {
         return stockMarketRepository
             .findAll()
             .flatMap( market -> {
-                return updateStockPrizes(market.getId(), from, to);
+                return updateStockPrices(market.getId(), from, to);
             });
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrizes(UUID id, Date from, Date to) {
+    public Flux<StockPrice> updateStockPrices(UUID id, Date from, Date to) {
          return stockMarketRepository.getStocksByMarket(id).flatMap( stock -> {
-            Flux<StockPrice> resut = stockService.updateStockPrize(stock, from, to);
-            return resut;
+            Flux<StockPrice> result = stockService.updateStockPrize(stock, from, to);
+            return result;
         });
     }
 

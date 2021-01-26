@@ -24,23 +24,26 @@ public class StockMarketController {
         return stockMarketService.getStockMarket(uuid);
     }
 
+    @PostMapping("/stockmarkets")
+    private Mono<StockMarket> create(@RequestBody StockMarket stockMarket){
+        return stockMarketService.createStockMarket(stockMarket);
+    }
+
     @PostMapping("/stockmarkets/{uuid}/prices")
-    private Flux<StockPrice> updateStockPrizes(
+    private Mono<Void> updateStockPrizes(
         @PathVariable UUID                                                                  uuid,
         @RequestParam(value = "from") @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date>  from,
         @RequestParam(value = "to"  ) @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date>  to
     ){
         Date today = new Date();
-        return stockMarketService.updateStockPrizes(
+            var x = stockMarketService.updateStockPrices(
             uuid,
             from.orElse(today),
             to.orElse(today));
+ //           .then();
+        return x.then();
     }
 
-    @PostMapping("/stockmarkets")
-    private Mono<StockMarket> create(@RequestBody StockMarket stockMarket){
-        return stockMarketService.createStockMarket(stockMarket);
-    }
 
     public void setStockMarketService(StockMarketService stockMarketService) {
         this.stockMarketService = stockMarketService;

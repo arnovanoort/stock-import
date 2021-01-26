@@ -14,7 +14,7 @@ public interface StockMarketService {
 
     public Mono<StockMarket> getStockMarket(UUID uuid);
 
-    public Flux<StockPrice> updateStockPrizes(UUID uuid, Date from, Date to);
+    public Flux<StockPrice> updateStockPrices(UUID uuid, Date from, Date to);
 
-    public Flux<StockPrice> updateStockPrizes(Date from, Date to);
+    public Flux<StockPrice> updateStockPrices(Date from, Date to);
 }

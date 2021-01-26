@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 
 public interface StockIntegrationTestData {
 
+  LocalDate today = LocalDate.now();
+
   default Flux<String> getTestFile(String fileLocation) throws IOException {
     String location = new ClassPathResource(
         fileLocation,
@@ -33,4 +35,52 @@ public interface StockIntegrationTestData {
     );
 
   }
+
+  UUID amazonStockUuid = UUID.randomUUID();
+  UUID netflixStockUuid = UUID.randomUUID();
+
+  default Stock amazonStock(UUID stockUuid, UUID stockMarketUuid) {
+    return new Stock(
+        stockUuid,
+        "Amazon",
+        "AMZ",
+        "Stock",
+        "Dollar",
+        Optional.of(today),
+        Optional.of(today),
+        stockMarketUuid);
+  }
+
+  StockMarket newNasdaqStockMarket = new StockMarket(null, "Nasdaq");
+
+  StockMarket existingNasdaqStockMarket = new StockMarket(UUID.randomUUID(), "Nasdaq");
+
+  default Stock amazonStock(){
+    return amazonStock(null, UUID.randomUUID());
+  }
+
+  default Stock amazonStock(UUID stockUuid){
+    return amazonStock(stockUuid, UUID.randomUUID());
+  }
+
+  public StockPrice amazonStockPrice = new StockPrice(
+      1f,
+      2f,
+      3f,
+      4f,
+      100000l,
+      LocalDateTime.of(2020, 11, 16, 1, 2),
+      amazonStockUuid
+  );
+
+  StockPrice netflixPrize = new StockPrice(
+      5f,
+      6f,
+      7f,
+      8f,
+      200000l,
+      LocalDateTime.of(2020, 11, 15, 3, 4),
+      netflixStockUuid
+  );
+
 }

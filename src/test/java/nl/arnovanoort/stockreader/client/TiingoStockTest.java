@@ -24,23 +24,24 @@ public class TiingoStockTest {
   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   @Test
-  public void testParseCSVHappy() throws IOException {
+  public void testParseCSV() throws IOException {
     String location = new ClassPathResource(
         "tickerInfo/supported_tickers.csv",
         this.getClass().getClassLoader())
         .getFile().getPath();
     Path path = Paths.get(location);
 
-    Flux<String> csvFlux = Flux.using(
+    Flux<String> csvWithHeader = Flux.using(
         () -> Files.lines(path),
         Flux::fromStream,
         Stream::close
     );
 
     // skip header line
-    Flux<String> csvFlux2 = csvFlux.skip(1);
+    Flux<String> csvFlux = csvWithHeader.skip(1);
 
-    Flux<TiingoStock> tingoStocks = csvFlux2.map(line -> TiingoStock.fromCSV(line));
+    Flux<TiingoStock> tingoStocks = csvFlux.map(line -> TiingoStock.fromCSV(line));
+
     StepVerifier.create(tingoStocks)
         .assertNext(stock -> {
           Assert.assertEquals("AAPL"      , stock.getTicker());

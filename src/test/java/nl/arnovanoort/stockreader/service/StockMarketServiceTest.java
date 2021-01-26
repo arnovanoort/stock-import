@@ -73,7 +73,7 @@ public class StockMarketServiceTest {
         when(stockService.updateStockPrize(amazon, today, today)).thenReturn(Flux.just(amazonPrize));
         when(stockService.updateStockPrize(netflix, today, today)).thenReturn(Flux.just(netflixPrize));
 
-        Flux<StockPrice> stockprizes = stockMarketService.updateStockPrizes(today, today);
+        Flux<StockPrice> stockprizes = stockMarketService.updateStockPrices(today, today);
 
         Assert.assertTrue(stockprizes.any(stockPrize -> stockPrize.getStockId() == amazonStockUuid).block());
         Assert.assertTrue(stockprizes.any(stockPrize -> stockPrize.getStockId() == netflixStockUuid).block());

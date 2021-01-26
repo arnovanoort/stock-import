@@ -15,6 +15,9 @@ import java.util.stream.Stream;
 @Service
 public class MultipartReader {
 
+  /*
+   Will be used later on to read zipped http response
+   */
   public Flux<String> getLines(FilePart filePart) {
     Flux<String> result =  filePart.content()
         .map(dataBuffer -> {

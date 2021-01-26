@@ -55,7 +55,7 @@ public class Stock {
     }
 
     private LocalDate fixDate(Optional<LocalDate> date) {
-        if(dateListedNullable == null){
+        if(date == null){
             return null;
         } else {
             return date.orElse(null);

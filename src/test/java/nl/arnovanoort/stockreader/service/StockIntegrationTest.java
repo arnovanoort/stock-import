@@ -40,7 +40,6 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     StockController stockController;
     StockMarket stockMarket;
 
-
     @Autowired
     private StockMarketService stockMarketService;
 
@@ -62,7 +61,6 @@ public class StockIntegrationTest implements StockIntegrationTestData{
         flyway.migrate();
     }
 
-    LocalDate today = LocalDate.now();
 
     public StockIntegrationTest(){
         stockController = new StockController();
@@ -74,15 +72,7 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     @Test
     public void testCreateNewStock() throws Exception {
         StockMarket newStockMarket = createTestStockMarket();
-        Stock amazonStock = new Stock(
-            null,
-            "Amazon",
-            "AMZ",
-            "Stock",
-            "EUR",
-            Optional.of(today),
-            Optional.of(today),
-            newStockMarket.getId());
+        Stock amazonStock = amazonStock();
 
         Flux<Stock> result = createStock(amazonStock);
 
