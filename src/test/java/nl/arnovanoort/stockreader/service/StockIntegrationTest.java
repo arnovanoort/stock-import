@@ -3,10 +3,12 @@ package nl.arnovanoort.stockreader.service;
 import nl.arnovanoort.stockreader.controller.StockController;
 import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
+import nl.arnovanoort.stockreader.repository.PostgresqlTestContainer;
 import nl.arnovanoort.stockreader.repository.StockMarketRepository;
 import org.flywaydb.core.Flyway;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -29,6 +32,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -55,6 +61,10 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     @Autowired
     Flyway flyway;
 
+    @ClassRule
+    public static PostgreSQLContainer postgreSQLContainer = PostgresqlTestContainer.getInstance();
+
+
     @BeforeEach
     public void setup(){
         flyway.clean();
@@ -66,13 +76,13 @@ public class StockIntegrationTest implements StockIntegrationTestData{
         stockController = new StockController();
         stockController.setStockService(stockService);
         stockMarket = new StockMarket(null, "Nasdaq");
-
+        postgreSQLContainer.start();
     }
 
     @Test
     public void testCreateNewStock() throws Exception {
         StockMarket newStockMarket = createTestStockMarket();
-        Stock amazonStock = amazonStock();
+        Stock amazonStock = amazonStock(null, newStockMarket.getId());
 
         Flux<Stock> result = createStock(amazonStock);
 
@@ -92,8 +102,8 @@ public class StockIntegrationTest implements StockIntegrationTestData{
             "AMZ",
             "Stock",
             "EUR",
-            Optional.of(today),
-            Optional.of(today),
+            Optional.of(localDateToday),
+            Optional.of(localDateToday),
             newStockMarket.getId());
 
         Stock createdStock = createStock(amazonStock).blockFirst();
@@ -119,15 +129,13 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     public void testImportStock() throws InterruptedException, IOException {
         // prepare data
         Flux<String> csvFlux = getTestFile("tickerInfo/supported_tickers.csv");
+        List<String> resultList = Arrays.asList(new String[] { "AAPL", "NFLX", "TSLA" });
 
         // Execute method under test
-        Flux<Stock> stock = stockService.importStocks(csvFlux);
+        Mono<List<String>> stockTickers = stockService.importStocks(csvFlux).map(stock -> stock.getTicker()).collectSortedList();
 
-        StepVerifier.create(stock)
-            .assertNext(s -> {Assertions.assertEquals(s.getName(), "TSLA");})
-            .assertNext(s -> {Assertions.assertEquals(s.getName(), "AAPL");})
-            .assertNext(s -> {Assertions.assertEquals(s.getName(), "NFLX");})
-            .verifyComplete();
+        // verify
+        StepVerifier.create(stockTickers).expectNext(resultList).verifyComplete();
     }
 
     @Test

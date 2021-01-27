@@ -34,8 +34,6 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
   @MockBean
   private StockMarketService stockMarketServiceMock;
 
-//  DateTimeFormatter listedDateformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
   @Test
   public void testGetStockMarketByUuid(){
 
@@ -74,15 +72,12 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
 
   @Test
   public void importStockPrices(){
-
-    Date date = new Date(2021,1, 25);
-
-    when(stockMarketServiceMock.updateStockPrices(existingNasdaqStockMarket.getId(), date, date))
+    when(stockMarketServiceMock.updateStockPrices(existingNasdaqStockMarket.getId(), localDateToday, localDateToday))
         .thenReturn(Flux.just(amazonStockPrice,amazonStockPrice));
 
     webTestClient
         .post()
-        .uri("/stockmarkets/{uuid}/prices?from=2021-01-25&to=2021-01-25", existingNasdaqStockMarket.getId())
+        .uri("/stockmarkets/{uuid}/prices", existingNasdaqStockMarket.getId())
         .contentType(MediaType.APPLICATION_JSON)
         //.body(Mono.just(newNasdaqStockMarket), StockMarket.class)
         .exchange()
@@ -92,5 +87,4 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
         .isEmpty()
     ;
   }
-
 }

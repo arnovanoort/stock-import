@@ -41,7 +41,7 @@ public class TiingoStockTest {
     Flux<String> csvFlux = csvWithHeader.skip(1);
 
     Flux<TiingoStock> tingoStocks = csvFlux.map(line -> TiingoStock.fromCSV(line));
-
+    var x = tingoStocks.blockFirst();
     StepVerifier.create(tingoStocks)
         .assertNext(stock -> {
           Assert.assertEquals("AAPL"      , stock.getTicker());
@@ -67,6 +67,14 @@ public class TiingoStockTest {
           Assert.assertTrue(  stock.getDateListed().isEmpty());
           Assert.assertTrue(  stock.getDateUnListed().isEmpty());
         })
+//        .assertNext(stock -> {
+//          Assert.assertEquals("TSLA"      , stock.getTicker());
+//          Assert.assertEquals("NASDAQ"    , stock.getStockMarket());
+//          Assert.assertEquals("Stock"     , stock.getAssetType());
+//          Assert.assertEquals("USD"       , stock.getCurrency());
+//          Assert.assertTrue(  stock.getDateListed().isEmpty());
+//          Assert.assertTrue(  stock.getDateUnListed().isEmpty());
+//        })
         .verifyComplete();
   }
 }

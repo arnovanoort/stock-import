@@ -59,23 +59,14 @@ public class StockServiceTest implements StockIntegrationTestData{
 
     @Test
     public void importStockPrice(){
-        Date today = new Date();
-        LocalDate localDateToday = LocalDate.now();
-        LocalDateTime localDateTimeToday = LocalDateTime.now();
-//        UUID amazonStockUuid = UUID.randomUUID();
-//        UUID netflixStockUuid = UUID.randomUUID();
-//        UUID marketUuid = UUID.randomUUID();
-//        StockMarket nasdaq = new StockMarket(marketUuid, "NASDAQ");
         Stock amazon = new Stock(UUID.randomUUID(), "AMAZON", "AMZN", "Stock", "EUR", Optional.of(localDateToday), Optional.of(localDateToday), existingNasdaqStockMarket.getId());
         Stock netflix = new Stock(UUID.randomUUID(), "NETFLIX", "NFLX", "Stock", "EUR", Optional.of(localDateToday), Optional.of(localDateToday), existingNasdaqStockMarket.getId());
-//        StockPrice amazonPrize = new StockPrice(1f, 2f, 3f, 4f, 100000l, LocalDateTime.of(2020, 11, 16, 1, 2), amazonStockUuid);
-//        StockPrice netflixPrize = new StockPrice(5f, 6f, 7f, 8f, 200000l, LocalDateTime.of(2020, 11, 15, 3, 4), netflixStockUuid);
-        TiingoStock netflixTiingoStock = new TiingoStock(netflix.getTicker(), "NASDAQ", netflix.getAssetType(), netflix.getCurrency(), netflix.getDateListed(), netflix.getDateUnListed());
+//        TiingoStock netflixTiingoStock = new TiingoStock(netflix.getTicker(), "NASDAQ", netflix.getAssetType(), netflix.getCurrency(), netflix.getDateListed(), netflix.getDateUnListed());
         TingoStockPrice netflixTiingoStockPrice = new TingoStockPrice(netflixPrize.getOpen(), netflixPrize.getClose(), netflixPrize.getHigh(), netflixPrize.getLow(), netflixPrize.getVolume(), localDateTimeToday);
 
-        when(stockPrizeRepository.get(amazon.getId(), today)).thenReturn(Mono.just(amazonStockPrice));
-        when(tiingoClient.getStockPrize(amazon.getTicker(), today, today)).thenReturn(Flux.just(netflixTiingoStockPrice));
-        Flux<StockPrice> result = stockService.updateStockPrize(amazon, today, today );
+        when(stockPrizeRepository.get(amazon.getId(), localDateToday)).thenReturn(Mono.just(amazonStockPrice));
+        when(tiingoClient.getStockPrize(amazon.getTicker(), localDateToday, localDateToday)).thenReturn(Flux.just(netflixTiingoStockPrice));
+        Flux<StockPrice> result = stockService.updateStockPrize(amazon, localDateToday, localDateToday );
 
         StepVerifier.create(result)
             .assertNext(stockPrice -> Assertions.assertEquals(stockPrice.getId(), amazonStockPrice.getId()))

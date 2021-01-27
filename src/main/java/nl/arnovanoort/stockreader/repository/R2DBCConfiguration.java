@@ -3,7 +3,9 @@ package nl.arnovanoort.stockreader.repository;
 import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,15 +23,16 @@ class R2DBCConfiguration extends AbstractR2dbcConfiguration {
 
 	@Bean
 	public ConnectionFactory connectionFactory() {
-		ConnectionFactory connectionFactory = new PostgresqlConnectionFactory(
-				io.r2dbc.postgresql.PostgresqlConnectionConfiguration.builder()
-						.host(dbConfig.getHost())
-						.port(dbConfig.getPort())
-						.username(dbConfig.getUsername())
-						.password(dbConfig.getPassword())
-						.database(dbConfig.getDatabase())
-						.build()
-		);
+
+		ConnectionFactoryOptions options = ConnectionFactoryOptions.parse(dbConfig.getUrl())
+				.mutate()
+				.option(ConnectionFactoryOptions.USER, dbConfig.getUsername())
+				.option(ConnectionFactoryOptions.PASSWORD, dbConfig.getPassword())
+				.option(ConnectionFactoryOptions.DATABASE, dbConfig.getDatabase())
+				.build();
+
+		ConnectionFactory connectionFactory = ConnectionFactories.get(options);
+
 		ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(connectionFactory)
 				.maxIdleTime(Duration.ofMinutes(30))
 				.initialSize(2)

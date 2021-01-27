@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import nl.arnovanoort.stockreader.service.StockIntegrationTestData;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 @ExtendWith(SpringExtension.class)
-public class TiingoClientTest {
+public class TiingoClientTest implements StockIntegrationTestData {
 
     public static MockWebServer mockBackEnd;
 
@@ -75,7 +76,7 @@ public class TiingoClientTest {
                 .addHeader("Content-Type", "application/json"));
 
         // execute
-        Flux<TingoStockPrice> stockPriceMono = tiingoClient.getStockPrize("TSLA", today, today );
+        Flux<TingoStockPrice> stockPriceMono = tiingoClient.getStockPrize("TSLA", localDateToday, localDateToday );
 
         // verify
         StepVerifier.create(stockPriceMono)

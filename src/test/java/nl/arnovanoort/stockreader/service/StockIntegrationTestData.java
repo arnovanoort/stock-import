@@ -19,22 +19,9 @@ import java.util.stream.Stream;
 
 public interface StockIntegrationTestData {
 
-  LocalDate today = LocalDate.now();
+  LocalDate localDateToday = LocalDate.now();
+  LocalDateTime localDateTimeToday = LocalDateTime.now();
 
-  default Flux<String> getTestFile(String fileLocation) throws IOException {
-    String location = new ClassPathResource(
-        fileLocation,
-        this.getClass().getClassLoader())
-        .getFile().getPath();
-    Path path = Paths.get(location);
-
-    return Flux.using(
-        () -> Files.lines(path),
-        Flux::fromStream,
-        Stream::close
-    );
-
-  }
 
   UUID amazonStockUuid = UUID.randomUUID();
   UUID netflixStockUuid = UUID.randomUUID();
@@ -46,8 +33,8 @@ public interface StockIntegrationTestData {
         "AMZ",
         "Stock",
         "Dollar",
-        Optional.of(today),
-        Optional.of(today),
+        Optional.of(localDateToday),
+        Optional.of(localDateToday),
         stockMarketUuid);
   }
 
@@ -83,4 +70,18 @@ public interface StockIntegrationTestData {
       netflixStockUuid
   );
 
+  default Flux<String> getTestFile(String fileLocation) throws IOException {
+    String location = new ClassPathResource(
+        fileLocation,
+        this.getClass().getClassLoader())
+        .getFile().getPath();
+    Path path = Paths.get(location);
+
+    return Flux.using(
+        () -> Files.lines(path),
+        Flux::fromStream,
+        Stream::close
+    );
+
+  }
 }

@@ -2,4 +2,3 @@ ticker,exchange,assetType,priceCurrency,startDate,endDate
 AAPL,NASDAQ,Stock,USD,1980-12-12,2020-12-10
 NFLX,NASDAQ,Stock,USD,2002-05-23,
 TSLA,NASDAQ,Stock,USD,,
-TSLA,NASDAQ,Stock,USD,,

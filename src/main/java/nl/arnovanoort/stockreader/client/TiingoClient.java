@@ -8,8 +8,8 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.BaseStream;
 
 @Component
@@ -28,7 +28,7 @@ public class TiingoClient {
     /*
         https://api.tiingo.com/tiingo/daily/aapl/prices?token=<TOKEN HERE>&startDate=12-02-2020&endDate=12-02-2020
      */
-    public Flux<TingoStockPrice> getStockPrize(String ticker, Date from, Date to){
+    public Flux<TingoStockPrice> getStockPrize(String ticker, LocalDate from, LocalDate to){
         // TODO: read from config
 
         String path = "/tiingo/daily/" + ticker + "/prices"  ;
@@ -37,8 +37,8 @@ public class TiingoClient {
                 return builder
                     .path(path)
                     .queryParam("token",     tingoConfig.getToken())
-                    .queryParam("startDate", new SimpleDateFormat("yyyy-MM-dd").format(from))
-                    .queryParam("endDate",   new SimpleDateFormat("yyyy-MM-dd").format(to))
+                    .queryParam("startDate", from.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+                    .queryParam("endDate",   to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
                     .build();
             })
             .retrieve()

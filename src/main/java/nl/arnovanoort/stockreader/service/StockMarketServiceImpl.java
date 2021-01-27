@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class StockMarketServiceImpl implements StockMarketService {
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrices(Date from, Date to) {
+    public Flux<StockPrice> updateStockPrices(LocalDate from, LocalDate to) {
         return stockMarketRepository
             .findAll()
             .flatMap( market -> {
@@ -43,7 +44,7 @@ public class StockMarketServiceImpl implements StockMarketService {
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrices(UUID id, Date from, Date to) {
+    public Flux<StockPrice> updateStockPrices(UUID id, LocalDate from, LocalDate to) {
          return stockMarketRepository.getStocksByMarket(id).flatMap( stock -> {
             Flux<StockPrice> result = stockService.updateStockPrize(stock, from, to);
             return result;

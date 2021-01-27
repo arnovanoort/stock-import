@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,21 +33,18 @@ public class StockMarketController {
     @PostMapping("/stockmarkets/{uuid}/prices")
     private Mono<Void> updateStockPrizes(
         @PathVariable UUID                                                                  uuid,
-        @RequestParam(value = "from") @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date>  from,
-        @RequestParam(value = "to"  ) @DateTimeFormat(pattern="yyyy-MM-dd") Optional<Date>  to
+        @RequestParam(value = "from") @DateTimeFormat(pattern="yyyy-MM-dd") Optional<LocalDate>  from,
+        @RequestParam(value = "to"  ) @DateTimeFormat(pattern="yyyy-MM-dd") Optional<LocalDate>  to
     ){
-        Date today = new Date();
-            var x = stockMarketService.updateStockPrices(
+        LocalDate today = LocalDate.now();
+        return stockMarketService.updateStockPrices(
             uuid,
             from.orElse(today),
-            to.orElse(today));
- //           .then();
-        return x.then();
+            to.orElse(today)
+        ).then();
     }
-
 
     public void setStockMarketService(StockMarketService stockMarketService) {
         this.stockMarketService = stockMarketService;
     }
 }
-

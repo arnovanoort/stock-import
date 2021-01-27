@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -78,7 +79,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrize(Stock stock, Date from, Date to) {
+    public Flux<StockPrice> updateStockPrize(Stock stock, LocalDate from, LocalDate to) {
 
         return Flux.concat(stockPrizeRepository.get(stock.getId(), from))
             .doOnNext(stockPrice -> System.out.println("S1 : " + stockPrice))
@@ -131,13 +132,9 @@ public class StockServiceImpl implements StockService {
             Stream::close
         )
             .skip(1) // do not process head line
-            .map(line -> {
-                return TiingoStock.fromCSV(line);
-            })
-            .flatMap( tiingoStock -> {
-                return store(tiingoStock);
-            })
-             .log();
+            .map( line -> { return TiingoStock.fromCSV(line); })
+            .flatMap( tiingoStock -> { return store(tiingoStock); })
+            .log();
     }
 
     @Transactional
@@ -149,9 +146,6 @@ public class StockServiceImpl implements StockService {
             .switchIfEmpty(stockMarketRepository.findByName(tiingoStock.getStockMarket()))
             .flatMap(
                 market -> stockMarketRepository.findByName(tiingoStock.getStockMarket()))
-            .doOnNext(market -> {
-                System.out.println("Market 2 onNext: " + market.getName());
-            })
             .map(stockMarket -> {
                 return tiingoStock.toStock(stockMarket.getId());
             }).flatMap(stock -> {
@@ -167,13 +161,6 @@ public class StockServiceImpl implements StockService {
                         stock.getDateUnListedNullable(),
                         stock.getStockMarketId()))
                     .switchIfEmpty(stockRepository.findStockByTicker(stock.getTicker()));
-            })
-            .doOnNext(found -> {
-                System.out.println("MARKET " + found.getName());
-            })
-            .doOnError(error -> {
-                System.out.println("ERROR" + error);
-                error.printStackTrace();
             })
             .log();
     }

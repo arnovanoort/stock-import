@@ -55,8 +55,8 @@ public class StockControllerTest implements StockIntegrationTestData {
         .jsonPath("$.ticker").isEqualTo("AMZ")
         .jsonPath("$.assetType").isEqualTo("Stock")
         .jsonPath("$.currency").isEqualTo("Dollar")
-        .jsonPath("$.dateListedNullable").isEqualTo(today.format(listedDateformatter))
-        .jsonPath("$.dateUnListedNullable").isEqualTo(today.format(listedDateformatter))
+        .jsonPath("$.dateListedNullable").isEqualTo(localDateToday.format(listedDateformatter))
+        .jsonPath("$.dateUnListedNullable").isEqualTo(localDateToday.format(listedDateformatter))
         .jsonPath("$.stockMarketId").isEqualTo(amazonStock.getStockMarketId().toString())
     ;
   }

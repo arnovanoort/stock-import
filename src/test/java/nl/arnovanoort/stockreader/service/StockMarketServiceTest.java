@@ -26,7 +26,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-public class StockMarketServiceTest {
+public class StockMarketServiceTest implements StockIntegrationTestData{
 
     @TestConfiguration
     static class StockServiceTestConfiguration {
@@ -57,8 +57,8 @@ public class StockMarketServiceTest {
 
     @Test
     public void updateStock() {
-        Date today = new Date();
-        LocalDate localDateToday = LocalDate.now();
+//        Date today = new Date();
+//        LocalDate localDateToday = LocalDate.now();
         UUID amazonStockUuid = UUID.randomUUID();
         UUID netflixStockUuid = UUID.randomUUID();
         UUID marketUuid = UUID.randomUUID();
@@ -70,10 +70,10 @@ public class StockMarketServiceTest {
 
         when(stockMarketRepository.findAll()).thenReturn(Flux.just(nasdaq));
         when(stockMarketRepository.getStocksByMarket(marketUuid)).thenReturn(Flux.just(amazon, netflix));
-        when(stockService.updateStockPrize(amazon, today, today)).thenReturn(Flux.just(amazonPrize));
-        when(stockService.updateStockPrize(netflix, today, today)).thenReturn(Flux.just(netflixPrize));
+        when(stockService.updateStockPrize(amazon, localDateToday, localDateToday)).thenReturn(Flux.just(amazonPrize));
+        when(stockService.updateStockPrize(netflix, localDateToday, localDateToday)).thenReturn(Flux.just(netflixPrize));
 
-        Flux<StockPrice> stockprizes = stockMarketService.updateStockPrices(today, today);
+        Flux<StockPrice> stockprizes = stockMarketService.updateStockPrices(localDateToday, localDateToday);
 
         Assert.assertTrue(stockprizes.any(stockPrize -> stockPrize.getStockId() == amazonStockUuid).block());
         Assert.assertTrue(stockprizes.any(stockPrize -> stockPrize.getStockId() == netflixStockUuid).block());

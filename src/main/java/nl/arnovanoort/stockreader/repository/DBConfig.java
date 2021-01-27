@@ -10,19 +10,12 @@ import org.springframework.context.annotation.Configuration;
 public class DBConfig {
 
     @Getter @Setter
-    private String host;
-    @Getter @Setter
-    private String port;
+    private String url;
     @Getter @Setter
     private String username;
     @Getter @Setter
     private String password;
     @Getter @Setter
     private String database;
-
-    public Integer getPort() {
-        return Integer.valueOf(port);
-    }
-
 
 }
