@@ -1,5 +1,6 @@
 package nl.arnovanoort.stockreader.service;
 
+import nl.arnovanoort.stockreader.client.TingoStockPrice;
 import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.domain.StockPrice;
@@ -12,20 +13,26 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 public interface StockIntegrationTestData {
 
-  LocalDate localDateToday = LocalDate.now();
-  LocalDateTime localDateTimeToday = LocalDateTime.now();
+  LocalDate localDateToday              = LocalDate.now();
+  LocalDateTime localDateTimeToday      = LocalDateTime.now();
 
+  UUID stockMarketUuid                  = UUID.randomUUID();
+  UUID amazonStockUuid                  = UUID.randomUUID();
+  UUID netflixStockUuid                 = UUID.randomUUID();
 
-  UUID amazonStockUuid = UUID.randomUUID();
-  UUID netflixStockUuid = UUID.randomUUID();
+  StockMarket newNasdaqStockMarket      = new StockMarket(null, "Nasdaq");
+  StockMarket existingNasdaqStockMarket = new StockMarket(stockMarketUuid, "Nasdaq");
 
+  default Stock newAmazonStock(){
+    return amazonStock(null, stockMarketUuid);
+  }
+  default Stock existingAmazonStock(UUID stockUuid){ return amazonStock(stockUuid, stockMarketUuid); }
+  default Stock existingAmazonStock(){ return amazonStock(amazonStockUuid, stockMarketUuid); }
   default Stock amazonStock(UUID stockUuid, UUID stockMarketUuid) {
     return new Stock(
         stockUuid,
@@ -33,21 +40,27 @@ public interface StockIntegrationTestData {
         "AMZ",
         "Stock",
         "Dollar",
-        Optional.of(localDateToday),
-        Optional.of(localDateToday),
+        localDateToday,
+        localDateToday,
         stockMarketUuid);
   }
 
-  StockMarket newNasdaqStockMarket = new StockMarket(null, "Nasdaq");
-
-  StockMarket existingNasdaqStockMarket = new StockMarket(UUID.randomUUID(), "Nasdaq");
-
-  default Stock amazonStock(){
-    return amazonStock(null, UUID.randomUUID());
+  default Stock newNetflixStock(){
+    return netflixStock(null, stockMarketUuid);
   }
-
-  default Stock amazonStock(UUID stockUuid){
-    return amazonStock(stockUuid, UUID.randomUUID());
+  default Stock existingNetflixStock(UUID stockUuid){ return netflixStock(stockUuid, stockMarketUuid); }
+  default Stock existingNetflixStock(){ return netflixStock(netflixStockUuid, stockMarketUuid); }
+  default Stock netflixStock(UUID stockUuid, UUID stockMarketUuid) {
+    return new Stock(
+        stockUuid,
+        "NETFLIX",
+        "NFLX",
+        "Stock",
+        "EUR",
+        localDateToday,
+        localDateToday,
+        stockMarketUuid
+    );
   }
 
   public StockPrice amazonStockPrice = new StockPrice(
@@ -56,17 +69,41 @@ public interface StockIntegrationTestData {
       3f,
       4f,
       100000l,
-      LocalDateTime.of(2020, 11, 16, 1, 2),
+      LocalDate.of(2020, 11, 15),
       amazonStockUuid
   );
 
-  StockPrice netflixPrize = new StockPrice(
+  default StockPrice newAmazonStockPrice(UUID stockUuid){
+    return new StockPrice(
+        1f,
+        2f,
+        3f,
+        4f,
+        100000l,
+        LocalDate.of(2020, 11, 16),
+        stockUuid
+    ) ;
+  }
+
+  default TingoStockPrice newAmazonTiingoStockPrice(){
+    return new TingoStockPrice(
+        1f,
+        2f,
+        3f,
+        4f,
+        100000l,
+        LocalDateTime.of(2020, 11, 16, 1, 2)
+    );
+  }
+
+
+  StockPrice netflixStockPrice = new StockPrice(
       5f,
       6f,
       7f,
       8f,
       200000l,
-      LocalDateTime.of(2020, 11, 15, 3, 4),
+      LocalDate.of(2020, 11, 15),
       netflixStockUuid
   );
 
@@ -82,6 +119,5 @@ public interface StockIntegrationTestData {
         Flux::fromStream,
         Stream::close
     );
-
   }
 }

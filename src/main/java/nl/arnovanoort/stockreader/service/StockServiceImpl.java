@@ -3,10 +3,11 @@ package nl.arnovanoort.stockreader.service;
 import nl.arnovanoort.stockreader.client.TiingoClient;
 import nl.arnovanoort.stockreader.client.TiingoStock;
 import nl.arnovanoort.stockreader.domain.Stock;
+import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.domain.StockPrice;
 import nl.arnovanoort.stockreader.exception.StockReaderException;
 import nl.arnovanoort.stockreader.repository.StockMarketRepository;
-import nl.arnovanoort.stockreader.repository.StockPrizeRepository;
+import nl.arnovanoort.stockreader.repository.StockPriceRepository;
 import nl.arnovanoort.stockreader.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,6 @@ import reactor.core.publisher.Mono;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -33,7 +33,7 @@ public class StockServiceImpl implements StockService {
     StockRepository stockRepository;
 
     @Autowired
-    StockPrizeRepository stockPrizeRepository;
+    StockPriceRepository stockPriceRepository;
 
     @Autowired
     TiingoClient tiingoClient;
@@ -56,21 +56,13 @@ public class StockServiceImpl implements StockService {
 //        .subscribe();
 //    }
 
-    public Mono<Stock> findStockByName(String id) {
-        Mono<Stock> stock =  stockRepository.findStockByTicker(id);
-        Mono<Stock> s = stock.map(s2 -> {
-            System.out.println("s2: " + s2);
-            return s2;
-        });
-        return stock;
+    public Mono<Stock> findStockByTicker(String id) {
+        return stockRepository.findStockByTicker(id);
     }
 
     @Override
     public Mono<Stock> getStock(UUID uuid) {
-        Mono<Stock> stock = stockRepository.findById(uuid);
-        stock.doOnNext(stock2 ->
-            System.out.println("stock2" + stock2));
-        return stock;
+        return stockRepository.findById(uuid);
     }
 
     @Override
@@ -79,28 +71,23 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public Flux<StockPrice> updateStockPrize(Stock stock, LocalDate from, LocalDate to) {
-
-        return Flux.concat(stockPrizeRepository.get(stock.getId(), from))
-            .doOnNext(stockPrice -> System.out.println("S1 : " + stockPrice))
-            .switchIfEmpty(tiingoClient
-                .getStockPrize(stock.getTicker(), from, to)
-                .map( tingoStockPrice -> tingoStockPrice
-                    .toStockPrice(stock.getId())
-                )
+    public Flux<StockPrice> importStockPrices(Stock stock, LocalDate from, LocalDate to) {
+        return Flux.concat(stockPriceRepository.get(stock.getId(), from))
+            .switchIfEmpty(
+                tiingoClient
+                .importStockPrices(stock.getTicker(), from, to)
+                .map( tingoStockPrice -> {
+                    return tingoStockPrice.toStockPrice(stock.getId());
+                })
                 .flatMap( stockPrize -> {
-                    return stockPrizeRepository.save(stockPrize);
+                    return stockPriceRepository.save(stockPrize);
                 })
-                .doOnNext(stockPrice -> {
-                    System.out.println("S2 : " + stockPrice);
-                })
-            ).log();
+            )
+            .log();
     }
-
 
     @Override
     public Flux<Stock> importStocks(Flux<String> lines) {
-        System.out.println("Start import!!");
         return lines
             .skip(1) // do not process head line
             .map(line -> {
@@ -108,19 +95,14 @@ public class StockServiceImpl implements StockService {
             })
             .flatMap( tiingoStock -> {
                 return store(tiingoStock);
-            })
-            .doOnNext(stock -> System.out.println("STOCK 1: " + stock));
+            });
     }
-
-
 
     @Override
     public Flux<Stock> importStocksLocal() {
         String location;
         try {
-            location = new FileSystemResource(
-                supportedTickersLocation)
-                .getFile().getPath();
+            location = new FileSystemResource(supportedTickersLocation).getFile().getPath();
         } catch(Exception e){
             e.printStackTrace();
             throw new StockReaderException("Could not read ticker file", e);
@@ -139,13 +121,10 @@ public class StockServiceImpl implements StockService {
 
     @Transactional
      Mono<Stock> store(TiingoStock tiingoStock) {
-        System.out.println("Starting new line: " + tiingoStock);
         return stockMarketRepository
             .findByName(tiingoStock.getStockMarket())
             .switchIfEmpty(stockMarketRepository.create(UUID.randomUUID(), tiingoStock.getStockMarket(), "tiingo"))
             .switchIfEmpty(stockMarketRepository.findByName(tiingoStock.getStockMarket()))
-            .flatMap(
-                market -> stockMarketRepository.findByName(tiingoStock.getStockMarket()))
             .map(stockMarket -> {
                 return tiingoStock.toStock(stockMarket.getId());
             }).flatMap(stock -> {

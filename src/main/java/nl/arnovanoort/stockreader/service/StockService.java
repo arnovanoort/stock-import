@@ -13,13 +13,13 @@ import java.util.UUID;
 
 public interface StockService {
 
-    Mono<Stock> findStockByName(String id);
+    Mono<Stock> findStockByTicker(String id);
 
     Mono<Stock> getStock(UUID uuid);
 
     Mono<Stock> createStock(Stock stock);
 
-    Flux<StockPrice> updateStockPrize(Stock stock, LocalDate from, LocalDate to);
+    Flux<StockPrice> importStockPrices(Stock stock, LocalDate from, LocalDate to);
 
     Flux<Stock> importStocks(Flux<String> lines);
 

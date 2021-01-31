@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -31,9 +32,7 @@ public class StockPrice {
     @Getter @Setter
     private UUID    stockId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", shape = JsonFormat.Shape.STRING)
-    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
-    private LocalDateTime   date;
+    private LocalDate date;
 
     public StockPrice() {} // needed for deserialisation
     public StockPrice(
@@ -42,7 +41,7 @@ public class StockPrice {
         Float high,
         Float low,
         Long volume,
-        LocalDateTime date,
+        LocalDate date,
         UUID stockId)
     {
         this.open       = open;

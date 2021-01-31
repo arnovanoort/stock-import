@@ -69,7 +69,7 @@ public class TingoStockPrice {
             this.high,
             this.low,
             this.volume,
-            this.date,
+            this.date.toLocalDate(),
             stockId
         );
         return price;

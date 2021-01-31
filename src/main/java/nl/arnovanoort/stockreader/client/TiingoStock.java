@@ -88,8 +88,8 @@ public class TiingoStock {
             ticker,
             assetType,
             currency,
-            dateListed,
-            dateUnListed,
+            dateListed.orElse(null),
+            dateUnListed.orElse(null),
             stockMarketId
         );
     }

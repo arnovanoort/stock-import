@@ -1,16 +1,15 @@
 package nl.arnovanoort.stockreader.controller;
 
 import nl.arnovanoort.stockreader.domain.StockMarket;
-import nl.arnovanoort.stockreader.domain.StockPrice;
 import nl.arnovanoort.stockreader.service.StockMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,17 +30,17 @@ public class StockMarketController {
     }
 
     @PostMapping("/stockmarkets/{uuid}/prices")
-    private Mono<Void> updateStockPrizes(
-        @PathVariable UUID                                                                  uuid,
+    private Mono<ResponseEntity> updateStockPrizes(
+        @PathVariable UUID                                                                       uuid,
         @RequestParam(value = "from") @DateTimeFormat(pattern="yyyy-MM-dd") Optional<LocalDate>  from,
         @RequestParam(value = "to"  ) @DateTimeFormat(pattern="yyyy-MM-dd") Optional<LocalDate>  to
     ){
         LocalDate today = LocalDate.now();
-        return stockMarketService.updateStockPrices(
+        return stockMarketService.importStockPrices(
             uuid,
             from.orElse(today),
             to.orElse(today)
-        ).then();
+        ).then(Mono.just(ResponseEntity.created(URI.create("/stocks")).build()));
     }
 
     public void setStockMarketService(StockMarketService stockMarketService) {

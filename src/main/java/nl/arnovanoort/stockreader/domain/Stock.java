@@ -1,6 +1,7 @@
 package nl.arnovanoort.stockreader.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,11 +10,11 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.UUID;
 
 @ToString
 @EqualsAndHashCode
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Stock {
 
     @Id
@@ -41,41 +42,16 @@ public class Stock {
                  String ticker,
                  String assetType,
                  String currency,
-                 Optional<LocalDate> dateListedNullable,
-                 Optional<LocalDate> dateUnListedNullable,
+                 LocalDate dateListedNullable,
+                 LocalDate dateUnListedNullable,
                  UUID stockMarketId) {
         this.id                     = id;
         this.name                   = name;
         this.ticker                 = ticker;
         this.assetType              = assetType;
         this.currency               = currency;
-        this.dateListedNullable     = fixDate(dateListedNullable);
-        this.dateUnListedNullable   = fixDate(dateUnListedNullable);
+        this.dateListedNullable     = dateListedNullable;
+        this.dateUnListedNullable   = dateUnListedNullable;
         this.stockMarketId          = stockMarketId;
     }
-
-    private LocalDate fixDate(Optional<LocalDate> date) {
-        if(date == null){
-            return null;
-        } else {
-            return date.orElse(null);
-        }
-    }
-
-    public Optional<LocalDate> getDateListed(){
-        return Optional.ofNullable(dateListedNullable);
-    }
-
-    public void setDateListed(Optional<LocalDate> dateListed){
-        this.dateListedNullable = dateListed.orElse(null);
-    }
-
-    public Optional<LocalDate> getDateUnListed(){
-        return Optional.ofNullable(dateUnListedNullable);
-    }
-
-    public void setDateUnListed(Optional<LocalDate> dateUnListed){
-        this.dateUnListedNullable = dateUnListed.orElse(null);
-    }
-
 }

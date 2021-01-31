@@ -6,7 +6,6 @@ import nl.arnovanoort.stockreader.service.StockIntegrationTestData;
 import nl.arnovanoort.stockreader.service.StockService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -15,7 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
@@ -39,7 +37,7 @@ public class StockControllerTest implements StockIntegrationTestData {
 
   @Test
   public void testGetStockByUuid(){
-    Stock amazonStock = amazonStock(UUID.randomUUID(), UUID.randomUUID());
+    Stock amazonStock = existingAmazonStock();
 
     when(stockServiceMock.getStock(amazonStock.getId()))
         .thenReturn(Mono.just(amazonStock));
@@ -63,8 +61,8 @@ public class StockControllerTest implements StockIntegrationTestData {
 
   @Test
   public void testCreateStock(){
-    Stock inputAmazonStock = amazonStock();
-    Stock returnAmazonStock = amazonStock(UUID.randomUUID(), UUID.randomUUID());
+    Stock inputAmazonStock = newAmazonStock();
+    Stock returnAmazonStock = existingAmazonStock();
 
     when(stockServiceMock.createStock(inputAmazonStock))
         .thenReturn(Mono.just(returnAmazonStock));
@@ -83,7 +81,7 @@ public class StockControllerTest implements StockIntegrationTestData {
   public void testImportLocal(){
 
     when(stockServiceMock.importStocksLocal())
-        .thenReturn(Flux.just(amazonStock()));
+        .thenReturn(Flux.just(newAmazonStock()));
 
     webTestClient
         .post()

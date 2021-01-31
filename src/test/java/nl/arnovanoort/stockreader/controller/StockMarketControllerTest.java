@@ -1,11 +1,9 @@
 package nl.arnovanoort.stockreader.controller;
 
 
-import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.service.StockIntegrationTestData;
 import nl.arnovanoort.stockreader.service.StockMarketService;
-import nl.arnovanoort.stockreader.service.StockService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,7 +66,7 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
 
   @Test
   public void importStockPrices(){
-    when(stockMarketServiceMock.updateStockPrices(existingNasdaqStockMarket.getId(), localDateToday, localDateToday))
+    when(stockMarketServiceMock.importStockPrices(existingNasdaqStockMarket.getId(), localDateToday, localDateToday))
         .thenReturn(Flux.just(amazonStockPrice,amazonStockPrice));
 
     webTestClient
@@ -82,7 +76,7 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
         //.body(Mono.just(newNasdaqStockMarket), StockMarket.class)
         .exchange()
         .expectStatus()
-        .isOk()
+        .isCreated()
         .expectBody()
         .isEmpty()
     ;

@@ -19,6 +19,14 @@ public interface StockRepository extends ReactiveCrudRepository<Stock, UUID> {
     Mono<Stock> findStockByTicker(String ticker);
 
     @Query("insert into stock values ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING")
-    Mono<Stock> create(UUID randomUUID, String name, String ticker, String assetType, String currency, LocalDate dateListedNullable, LocalDate dateUnListedNullable, UUID stockMarketId);
-
+    Mono<Stock> create(
+        UUID randomUUID,
+        String name,
+        String ticker,
+        String assetType,
+        String currency,
+        LocalDate dateListedNullable,
+        LocalDate dateUnListedNullable,
+        UUID stockMarketId
+    );
 }

@@ -28,7 +28,7 @@ public class TiingoClient {
     /*
         https://api.tiingo.com/tiingo/daily/aapl/prices?token=<TOKEN HERE>&startDate=12-02-2020&endDate=12-02-2020
      */
-    public Flux<TingoStockPrice> getStockPrize(String ticker, LocalDate from, LocalDate to){
+    public Flux<TingoStockPrice> importStockPrices(String ticker, LocalDate from, LocalDate to){
         // TODO: read from config
 
         String path = "/tiingo/daily/" + ticker + "/prices"  ;

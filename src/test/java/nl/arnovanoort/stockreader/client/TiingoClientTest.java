@@ -76,7 +76,7 @@ public class TiingoClientTest implements StockIntegrationTestData {
                 .addHeader("Content-Type", "application/json"));
 
         // execute
-        Flux<TingoStockPrice> stockPriceMono = tiingoClient.getStockPrize("TSLA", localDateToday, localDateToday );
+        Flux<TingoStockPrice> stockPriceMono = tiingoClient.importStockPrices("TSLA", localDateToday, localDateToday );
 
         // verify
         StepVerifier.create(stockPriceMono)

@@ -6,7 +6,6 @@ import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.repository.PostgresqlTestContainer;
 import nl.arnovanoort.stockreader.repository.StockMarketRepository;
 import org.flywaydb.core.Flyway;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;
@@ -16,27 +15,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.testcontainers.containers.PostgreSQLContainer;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -44,7 +31,6 @@ import java.util.stream.Stream;
 public class StockIntegrationTest implements StockIntegrationTestData{
 
     StockController stockController;
-    StockMarket stockMarket;
 
     @Autowired
     private StockMarketService stockMarketService;
@@ -56,7 +42,7 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     private StockMarketRepository stockMarketRepository;
 
     @Autowired
-    WebTestClient webTestClient;
+    private nl.arnovanoort.stockreader.service.WebTestClientWrapper webTestClientWrapper;
 
     @Autowired
     Flyway flyway;
@@ -71,20 +57,18 @@ public class StockIntegrationTest implements StockIntegrationTestData{
         flyway.migrate();
     }
 
-
     public StockIntegrationTest(){
         stockController = new StockController();
         stockController.setStockService(stockService);
-        stockMarket = new StockMarket(null, "Nasdaq");
         postgreSQLContainer.start();
     }
 
     @Test
     public void testCreateNewStock() throws Exception {
-        StockMarket newStockMarket = createTestStockMarket();
+        StockMarket newStockMarket = webTestClientWrapper.createTestStockMarket();
         Stock amazonStock = amazonStock(null, newStockMarket.getId());
 
-        Flux<Stock> result = createStock(amazonStock);
+        Mono<Stock> result = webTestClientWrapper.createStock(amazonStock);
 
         StepVerifier.create(result)
             .assertNext(createdStock -> {
@@ -95,20 +79,15 @@ public class StockIntegrationTest implements StockIntegrationTestData{
 
     @Test
     public void testGetStock() throws Exception {
-        StockMarket newStockMarket = createTestStockMarket();
-        Stock amazonStock = new Stock(
-            null,
-            "Amazon",
-            "AMZ",
-            "Stock",
-            "EUR",
-            Optional.of(localDateToday),
-            Optional.of(localDateToday),
-            newStockMarket.getId());
+        // prepare
+        StockMarket newStockMarket = webTestClientWrapper.createTestStockMarket();
+        Stock amazonStock = amazonStock(null, newStockMarket.getId());
 
-        Stock createdStock = createStock(amazonStock).blockFirst();
+        // execute
+        Stock createdStock = webTestClientWrapper.createStock(amazonStock).block();
 
-        Flux<Stock> result = webTestClient
+        // verify
+        Flux<Stock> result = webTestClientWrapper.getClient()
             .get()
             .uri("/stocks/" + createdStock.getId())
             .exchange()
@@ -180,31 +159,6 @@ public class StockIntegrationTest implements StockIntegrationTestData{
 //            .verifyComplete();
 //    }
 
-    @NotNull
-    private Flux<Stock> createStock(Stock stock) {
-        return webTestClient
-            .post()
-            .uri("/stocks")
-            .body(Mono.just(stock), Stock.class)
-            .exchange()
-            .expectStatus()
-            .isCreated()
-            .returnResult(Stock.class)
-            .getResponseBody();
-    }
-
-    private StockMarket createTestStockMarket() {
-        return webTestClient
-            .post()
-            .uri("/stockmarkets")
-            .body(Mono.just(stockMarket), StockMarket.class)
-            .exchange()
-            .expectStatus()
-            .isOk()
-            .returnResult(StockMarket.class)
-            .getResponseBody()
-            .blockFirst();
-    }
 
 }
 
