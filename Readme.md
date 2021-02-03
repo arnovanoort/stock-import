@@ -1,14 +1,19 @@
+# Stock reader
+This application will enable you to fetch stock prices from tiingo, store these in a database and emit an event that can be used by other applications.
+
+## Getting started
 
 - database setup
     - start postgresql database 
         - sudo docker run -d --name dev-postgress -e POSTGRES_PASSWORD=Pass2020! -v ${HOME}/data/docker/postgres/:/var/lib/postgresql/data -p 5432:5432 postgres
     - sudo apt-get install pgadmin
-    - create databases named stocks(used for prod) and stocks-test(used for testing)
+    - create databases named stocks(used by the application) and stocks-test(used for junit testing)
 
-- tiingo client
+- You will need credentials to use the tiingo api:
     - go to https://api.tiingo.com/ and signup
     - after signing up yu will be provided a token
     - update the token in application.properties(tiingo.token)
+
 - application.properties
     - an example application.properties exists. copy the example and store it as application.properties.
         Update this with the correct variables(the tiingo.supported-tickers-location will be explained soon)
@@ -29,14 +34,19 @@ POST http://localhost:8080/stockmarkets/<replace-with stock-market-uuid>/prices?
 
 Todo
 - build frontend to display stocks
-- introduce logging and remove System.out.println
 - introduce backpressure while importing stocks
 - read and process stock information zit directly from http
+- non happy flow unit/integration tests.
 
 
 Fix
 - recreate repository layer, ditch ReactiveCrudRepository
-- remove onErrorResume
-- Do not import if already present
+ 
+## Technical details
 
-- 
+This is a fully non blocking application:
+- frontend uses spring webflux
+- business logic written using reactor
+- database layer uses the non blocking r2dbc postgresql driver.
+
+The integration tests use the postgresql [testcontainer](https://www.testcontainers.org/). This means you need the docker daemon running while executing the tests.
