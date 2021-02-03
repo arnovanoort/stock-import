@@ -5,11 +5,13 @@ import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.service.StockIntegrationTestData;
 import nl.arnovanoort.stockreader.service.StockMarketService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -18,7 +20,7 @@ import reactor.core.publisher.Mono;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebFluxTest(StockMarketController.class)
 public class StockMarketControllerTest implements StockIntegrationTestData {
 
@@ -41,7 +43,7 @@ public class StockMarketControllerTest implements StockIntegrationTestData {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.name").isEqualTo("Nasdaq")
+        .jsonPath("$.name").isEqualTo(nasdaq)
         .jsonPath("$.client").isEqualTo("tiingo")
     ;
   }

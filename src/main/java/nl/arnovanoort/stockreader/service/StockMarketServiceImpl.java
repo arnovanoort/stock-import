@@ -25,7 +25,9 @@ public class StockMarketServiceImpl implements StockMarketService {
     StockMarketRepository stockMarketRepository;
 
     public Mono<StockMarket> createStockMarket(StockMarket stockMarket){
-        return stockMarketRepository.save(stockMarket);
+            return stockMarketRepository.findByName(stockMarket.getName())
+            .switchIfEmpty(Mono.defer(() -> stockMarketRepository.create(UUID.randomUUID(), stockMarket.getName(), "tiingo")))
+            .switchIfEmpty(Mono.defer(() -> stockMarketRepository.findByName(stockMarket.getName())));
     }
 
     @Override

@@ -105,13 +105,37 @@ public class StockIntegrationTest implements StockIntegrationTestData{
     }
 
     @Test
-    public void testImportStock() throws InterruptedException, IOException {
+    public void testImportStock() throws IOException {
         // prepare data
         Flux<String> csvFlux = getTestFile("tickerInfo/supported_tickers.csv");
         List<String> resultList = Arrays.asList(new String[] { "AAPL", "NFLX", "TSLA" });
 
+        Flux<Integer> result = webTestClientWrapper.getClient()
+            .post()
+            .uri("/stocks/importlocal")
+            .exchange()
+            .expectStatus()
+            .isCreated()
+            .returnResult(Integer.class)
+            .getResponseBody()
+            ;
+
         // Execute method under test
         Mono<List<String>> stockTickers = stockService.importStocks(csvFlux).map(stock -> stock.getTicker()).collectSortedList();
+
+        // verify
+        StepVerifier.create(result)
+            .assertNext(nrOfStocks -> Assertions.assertEquals(nrOfStocks, 3))
+            .verifyComplete();
+    }
+
+    @Test
+    public void testImportStockLocal() throws IOException {
+        // prepare data
+        List<String> resultList = Arrays.asList(new String[] { "AAPL", "NFLX", "TSLA" });
+
+        // Execute method under test
+        Mono<List<String>> stockTickers = stockService.importStocksLocal().map(stock -> stock.getTicker()).collectSortedList();
 
         // verify
         StepVerifier.create(stockTickers).expectNext(resultList).verifyComplete();
@@ -134,31 +158,5 @@ public class StockIntegrationTest implements StockIntegrationTestData{
             .assertNext(s -> {Assertions.assertEquals(s.getName(), "SMPP");})
             .verifyComplete();
     }
-
-
-//    @Test
-//    /* later gebruiken voor multipart example */
-//    public void importStocks2() throws Exception {
-//        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-//        multipartBodyBuilder.part("file", new ClassPathResource("tickerInfo/supported_tickers.csv"))
-//            .contentType(MediaType.MULTIPART_FORM_DATA);
-//
-//        Flux<StockMarket> result = webTestClient.post()
-//            .uri("/stocks/import")
-//            .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
-//            .exchange()
-//            .expectStatus()
-//            .isOk()
-//            .returnResult(StockMarket.class)
-//            .getResponseBody();
-//
-//        StepVerifier.create(result)
-//            .assertNext(s -> {Assertions.assertEquals(s.getName(), "AAPL");})
-//            .assertNext(s -> {Assertions.assertEquals(s.getName(), "NFLX");})
-//            .assertNext(s -> {Assertions.assertEquals(s.getName(), "TSLA");})
-//            .verifyComplete();
-//    }
-
-
 }
 

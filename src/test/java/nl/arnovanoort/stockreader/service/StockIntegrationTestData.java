@@ -1,5 +1,6 @@
 package nl.arnovanoort.stockreader.service;
 
+import nl.arnovanoort.stockreader.client.TiingoStock;
 import nl.arnovanoort.stockreader.client.TingoStockPrice;
 import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
 
 public interface StockIntegrationTestData {
 
+  public static String nasdaq           = "NASDAQ";
   LocalDate localDateToday              = LocalDate.now();
   LocalDateTime localDateTimeToday      = LocalDateTime.now();
 
@@ -25,8 +27,8 @@ public interface StockIntegrationTestData {
   UUID amazonStockUuid                  = UUID.randomUUID();
   UUID netflixStockUuid                 = UUID.randomUUID();
 
-  StockMarket newNasdaqStockMarket      = new StockMarket(null, "Nasdaq");
-  StockMarket existingNasdaqStockMarket = new StockMarket(stockMarketUuid, "Nasdaq");
+  StockMarket newNasdaqStockMarket      = new StockMarket(null, nasdaq);
+  StockMarket existingNasdaqStockMarket = new StockMarket(stockMarketUuid, nasdaq);
 
   default Stock newAmazonStock(){
     return amazonStock(null, stockMarketUuid);
@@ -69,7 +71,7 @@ public interface StockIntegrationTestData {
       3f,
       4f,
       100000l,
-      LocalDate.of(2020, 11, 15),
+      localDateToday,
       amazonStockUuid
   );
 
@@ -80,21 +82,19 @@ public interface StockIntegrationTestData {
         3f,
         4f,
         100000l,
-        LocalDate.of(2020, 11, 16),
+        localDateToday,
         stockUuid
     ) ;
   }
 
-  default TingoStockPrice newAmazonTiingoStockPrice(){
-    return new TingoStockPrice(
-        1f,
-        2f,
-        3f,
-        4f,
-        100000l,
-        LocalDateTime.of(2020, 11, 16, 1, 2)
-    );
-  }
+  TingoStockPrice newAmazonTiingoStockPrice = new TingoStockPrice(
+      1f,
+      2f,
+      3f,
+      4f,
+      100000l,
+      localDateTimeToday
+  );
 
 
   StockPrice netflixStockPrice = new StockPrice(
@@ -103,9 +103,19 @@ public interface StockIntegrationTestData {
       7f,
       8f,
       200000l,
-      LocalDate.of(2020, 11, 15),
+      localDateToday,
       netflixStockUuid
   );
+
+  TingoStockPrice netflixTiingoStockPrice = new TingoStockPrice(
+      netflixStockPrice.getOpen(),
+      netflixStockPrice.getClose(),
+      netflixStockPrice.getHigh(),
+      netflixStockPrice.getLow(),
+      netflixStockPrice.getVolume(),
+      localDateTimeToday
+  );
+
 
   default Flux<String> getTestFile(String fileLocation) throws IOException {
     String location = new ClassPathResource(

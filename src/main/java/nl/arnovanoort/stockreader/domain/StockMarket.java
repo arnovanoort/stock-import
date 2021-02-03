@@ -24,6 +24,11 @@ public class StockMarket {
     @Getter @Setter
     String client;
 
+//    public StockMarket(String name) {
+//        this.name = name;
+//        this.client = "tiingo";
+//    }
+
     public StockMarket(UUID id, String name) {
         this.id = id;
         this.name = name;

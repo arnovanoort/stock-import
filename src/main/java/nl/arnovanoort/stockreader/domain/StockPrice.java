@@ -31,7 +31,7 @@ public class StockPrice {
     private Long    volume;
     @Getter @Setter
     private UUID    stockId;
-
+    @Getter @Setter
     private LocalDate date;
 
     public StockPrice() {} // needed for deserialisation

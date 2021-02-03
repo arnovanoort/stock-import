@@ -73,7 +73,7 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
     }
 
     public StockMarketIntegrationTest(){
-        market                = new StockMarket(null, "Nasdaq");
+        market                = new StockMarket(null, nasdaq);
         stockMarketController = new StockMarketController();
         stockMarketController.setStockMarketService(stockMarketService);
         postgreSQLContainer.start();
@@ -92,7 +92,7 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
             .returnResult(StockMarket.class);
 
         StepVerifier.create(result.getResponseBody())
-            .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
+            .assertNext(stockMarket -> Assert.assertEquals(nasdaq, stockMarket.getName()))
             .verifyComplete();
     }
 
@@ -119,22 +119,7 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
             .returnResult(StockMarket.class);
 
         StepVerifier.create(result.getResponseBody())
-            .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
-            .verifyComplete();
-    }
-
-    @Test
-    public void getStockMarketByName() throws Exception {
-
-        // execute
-        Mono<StockMarket> foundMarket = stockMarketService.createStockMarket(market)
-            .flatMap(sm -> {
-                return stockMarketRepository.findByName(sm.getName());
-            });
-
-        // verify
-        StepVerifier.create(foundMarket)
-            .assertNext(stockMarket -> Assert.assertEquals("Nasdaq", stockMarket.getName()))
+            .assertNext(stockMarket -> Assert.assertEquals(nasdaq, stockMarket.getName()))
             .verifyComplete();
     }
 
@@ -149,13 +134,13 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
             mockBackEnd.start(9999);
             mockBackEnd.enqueue(
                 new MockResponse()
-                    .setBody(objectMapper.writeValueAsString(newAmazonTiingoStockPrice()))
+                    .setBody(objectMapper.writeValueAsString(newAmazonTiingoStockPrice))
                     .addHeader("Content-Type", "application/json"));
 
             // execute
             webTestClientWrapper.getClient()
             .post()
-            .uri("/stockmarkets/" + newStockMarket.getId() + "/prices?from=2020-11-14&to=2020-11-16")
+            .uri("/stockmarkets/" + newStockMarket.getId() + "/prices?from=2021-02-02&to=2021-02-04")
             .exchange()
             .expectStatus()
             .isCreated();
@@ -163,10 +148,9 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
             mockBackEnd.shutdown();
 
             // validate
-            LocalDate from = LocalDate.of(2020, 11, 15);
-            LocalDate until = LocalDate.of(2020, 11, 16);
-            Flux<StockPrice> result = stockPriceRepository.getByStockUuid(amazonStock.getId(), from, until);
+            Flux<StockPrice> result = stockPriceRepository.getByStockUuid(amazonStock.getId(), localDateToday.minusDays(1), localDateToday.plusDays(1));
 
+            // verify
             StepVerifier.create(result).assertNext(stockPrice -> {
                 Assert.assertEquals(stockPrice.getHigh()    , amazonStockPrice.getHigh());
                 Assert.assertEquals(stockPrice.getClose()   , amazonStockPrice.getClose());

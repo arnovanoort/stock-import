@@ -64,7 +64,8 @@ public class StockController {
     public Mono<ResponseEntity> upload() {
         return stockService
             .importStocksLocal()
-            .then(Mono.just(ResponseEntity.created(URI.create("/stocks")).build()));
+            .count()
+            .map(nrOfStocks -> ResponseEntity.created(URI.create("/stocks")).body(nrOfStocks));
     }
 
     public void setStockService(StockService stockService) {

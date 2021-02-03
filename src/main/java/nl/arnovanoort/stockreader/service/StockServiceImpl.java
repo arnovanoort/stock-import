@@ -11,7 +11,9 @@ import nl.arnovanoort.stockreader.repository.StockPriceRepository;
 import nl.arnovanoort.stockreader.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -27,7 +29,7 @@ import java.util.stream.Stream;
 public class StockServiceImpl implements StockService {
 
     @Autowired
-    StockMarketRepository stockMarketRepository;
+    StockMarketService stockMarketService;
 
     @Autowired
     StockRepository stockRepository;
@@ -38,8 +40,11 @@ public class StockServiceImpl implements StockService {
     @Autowired
     TiingoClient tiingoClient;
 
+    @Autowired
+    UuidGenerator uuidGenerator;
+
     @Value("${tiingo.supported-tickers-location}")
-    String supportedTickersLocation;
+    Resource supportedTickersLocation;
 
 
 //    public void updateStocks(){
@@ -72,17 +77,17 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public Flux<StockPrice> importStockPrices(Stock stock, LocalDate from, LocalDate to) {
-        return Flux.concat(stockPriceRepository.get(stock.getId(), from))
-            .switchIfEmpty(
-                tiingoClient
-                .importStockPrices(stock.getTicker(), from, to)
-                .map( tingoStockPrice -> {
-                    return tingoStockPrice.toStockPrice(stock.getId());
-                })
-                .flatMap( stockPrize -> {
-                    return stockPriceRepository.save(stockPrize);
-                })
+        return tiingoClient
+            .importStockPrices(stock.getTicker(), from, to)
+            .map( tingoStockPrice -> {
+                return tingoStockPrice.toStockPrice(stock.getId());
+            })
+            .filterWhen( stockPrice ->
+                stockPriceRepository.getByStockUuidAndDate(stockPrice.getStockId(), stockPrice.getDate()).hasElement().map(a -> !a)
             )
+            .flatMap( stockPrize -> {
+                return stockPriceRepository.save(stockPrize);
+            })
             .log();
     }
 
@@ -102,44 +107,44 @@ public class StockServiceImpl implements StockService {
     public Flux<Stock> importStocksLocal() {
         String location;
         try {
-            location = new FileSystemResource(supportedTickersLocation).getFile().getPath();
+            var fileFlux = Flux.using(
+                () -> Files.lines(
+                    Paths
+                        .get(supportedTickersLocation
+                            .getFile()
+                            .getPath()
+                        )
+                ),
+                Flux::fromStream,
+                Stream::close
+            );
+            return importStocks(fileFlux);
         } catch(Exception e){
             e.printStackTrace();
             throw new StockReaderException("Could not read ticker file", e);
         }
-
-        return Flux.using(
-            () -> Files.lines(Paths.get(location)),
-            Flux::fromStream,
-            Stream::close
-        )
-            .skip(1) // do not process head line
-            .map( line -> { return TiingoStock.fromCSV(line); })
-            .flatMap( tiingoStock -> { return store(tiingoStock); })
-            .log();
     }
 
     @Transactional
      Mono<Stock> store(TiingoStock tiingoStock) {
-        return stockMarketRepository
-            .findByName(tiingoStock.getStockMarket())
-            .switchIfEmpty(stockMarketRepository.create(UUID.randomUUID(), tiingoStock.getStockMarket(), "tiingo"))
-            .switchIfEmpty(stockMarketRepository.findByName(tiingoStock.getStockMarket()))
+        return stockMarketService
+            // all
+            .createStockMarket(new StockMarket(null, tiingoStock.getStockMarket()))
             .map(stockMarket -> {
                 return tiingoStock.toStock(stockMarket.getId());
             }).flatMap(stock -> {
                 return stockRepository
                     .findStockByTicker(stock.getTicker())
-                    .switchIfEmpty(stockRepository.create(
-                        UUID.randomUUID(),
+                    .switchIfEmpty(Mono.defer(() -> stockRepository.create(
+                        uuidGenerator.generate(),
                         stock.getName(),
                         stock.getTicker(),
                         stock.getAssetType(),
                         stock.getCurrency(),
                         stock.getDateListedNullable(),
                         stock.getDateUnListedNullable(),
-                        stock.getStockMarketId()))
-                    .switchIfEmpty(stockRepository.findStockByTicker(stock.getTicker()));
+                        stock.getStockMarketId())))
+                    .switchIfEmpty(Mono.defer(()-> stockRepository.findStockByTicker(stock.getTicker())));
             })
             .log();
     }

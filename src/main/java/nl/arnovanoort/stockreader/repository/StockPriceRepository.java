@@ -13,9 +13,12 @@ import java.util.UUID;
 public interface StockPriceRepository extends ReactiveCrudRepository<StockPrice, UUID> {
 
   @Query("select * from stock_price where id = $1 AND date = $2")
-  Mono<StockPrice> get(UUID id, LocalDate from);
+  Mono<StockPrice> get(UUID id, LocalDate date);
 
   @Query("select * from stock_price where stock_id = $1 AND date >= $2 AND date <= $3")
   Flux<StockPrice> getByStockUuid(UUID stockId, LocalDate from, LocalDate until);
+
+  @Query("select * from stock_price where stock_id = $1 AND date = $2")
+  Mono<StockPrice> getByStockUuidAndDate(UUID stockId, LocalDate date);
 
 }
