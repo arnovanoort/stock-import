@@ -8,7 +8,6 @@ CREATE TABLE stock_market(
     client      VARCHAR NOT NULL,
     PRIMARY KEY (id),
     UNIQUE(name)
-
 );
 
 CREATE TABLE stock(

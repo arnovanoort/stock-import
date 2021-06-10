@@ -1,5 +1,6 @@
 package nl.arnovanoort.stockreader.service;
 
+import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockPrice;
 import nl.arnovanoort.stockreader.repository.StockMarketRepository;
 import nl.arnovanoort.stockreader.domain.StockMarket;
@@ -29,6 +30,7 @@ public class StockMarketServiceImpl implements StockMarketService {
             .switchIfEmpty(Mono.defer(() -> stockMarketRepository.create(UUID.randomUUID(), stockMarket.getName(), "tiingo")))
             .switchIfEmpty(Mono.defer(() -> stockMarketRepository.findByName(stockMarket.getName())));
     }
+
 
     @Override
     public Mono<StockMarket> getStockMarket(UUID uuid) {

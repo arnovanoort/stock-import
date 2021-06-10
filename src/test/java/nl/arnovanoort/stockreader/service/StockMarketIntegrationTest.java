@@ -29,7 +29,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
@@ -124,6 +123,33 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
     }
 
     @Test
+    public void getStocksByStockMarket() throws Exception {
+        UUID createdUuid = webTestClientWrapper.getClient()
+            .post()
+            .uri("/stockmarkets")
+            .body(Mono.just(market), StockMarket.class)
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .returnResult(StockMarket.class)
+            .getResponseBody()
+            .blockFirst()
+            .getId();
+
+        FluxExchangeResult<StockMarket> result = webTestClientWrapper.getClient()
+            .get()
+            .uri("/stockmarkets/" + createdUuid.toString())
+            .exchange()
+            .expectStatus()
+            .isOk()
+            .returnResult(StockMarket.class);
+
+        StepVerifier.create(result.getResponseBody())
+            .assertNext(stockMarket -> Assert.assertEquals(nasdaq, stockMarket.getName()))
+            .verifyComplete();
+    }
+
+    @Test
     public void importStockPrices(){
         try{
             // prepare
@@ -148,7 +174,7 @@ public class StockMarketIntegrationTest implements StockIntegrationTestData{
             mockBackEnd.shutdown();
 
             // validate
-            Flux<StockPrice> result = stockPriceRepository.getByStockUuid(amazonStock.getId(), localDateToday.minusDays(1), localDateToday.plusDays(1));
+            Flux<StockPrice> result = stockPriceRepository.getByStockUuidAndDateWindow(amazonStock.getId(), localDateToday.minusDays(1), localDateToday.plusDays(1));
 
             // verify
             StepVerifier.create(result).assertNext(stockPrice -> {

@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.domain.Persistable;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @ToString
@@ -23,11 +21,6 @@ public class StockMarket {
 
     @Getter @Setter
     String client;
-
-//    public StockMarket(String name) {
-//        this.name = name;
-//        this.client = "tiingo";
-//    }
 
     public StockMarket(UUID id, String name) {
         this.id = id;

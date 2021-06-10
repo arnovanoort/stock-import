@@ -15,6 +15,8 @@ public interface StockService {
 
     Mono<Stock> findStockByTicker(String id);
 
+    Flux<Stock> findStocksByStockMarket(UUID stockMarketUuid);
+
     Mono<Stock> getStock(UUID uuid);
 
     Mono<Stock> createStock(Stock stock);
@@ -23,5 +25,7 @@ public interface StockService {
 
     Flux<Stock> importStocks(Flux<String> lines);
 
-    public Flux<Stock> importStocksLocal();
+    Flux<Stock> importStocksLocal();
+
+    Flux<StockPrice> getStockPrices(UUID uuid, LocalDate from, LocalDate to);
 }

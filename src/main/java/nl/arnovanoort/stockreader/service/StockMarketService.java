@@ -1,5 +1,6 @@
 package nl.arnovanoort.stockreader.service;
 
+import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.domain.StockPrice;
 import reactor.core.publisher.Flux;

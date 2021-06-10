@@ -17,6 +17,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -95,6 +96,44 @@ public class StockControllerTest implements StockIntegrationTestData {
 
 
     verify(stockServiceMock).importStocksLocal();
+  }
+
+  @Test
+  public void testGetStockPrices(){
+    var from = LocalDate.of(2021, 04,30);
+//    var to = LocalDate.of(2021, 05,31);
+    var today = LocalDate.now();
+    when(stockServiceMock.getStockPrices(existingAmazonStock().getId(),from, today))
+            .thenReturn(Flux.just(amazonStockPrice));
+
+    webTestClient
+      .get()
+      .uri("/stocks/{uuid}/prices?from=2021-04-30", existingAmazonStock().getId())
+//              .uri("/stocks/{uuid}/prices?from=2021-04-30", existingAmazonStock().getId())
+//            .uri("/stocks/{uuid}/prices", existingAmazonStock().getId())
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectBody()
+      .jsonPath("$[0].['open']").isEqualTo(1f)
+      .jsonPath("$[0].['close']").isEqualTo(2f)
+      .jsonPath("$[0].['high']").isEqualTo(3f)
+      .jsonPath("$[0].['low']").isEqualTo(4f)
+      .jsonPath("$[0].['date']").isEqualTo(today.toString())
+      .jsonPath("$[0].['stockId']").isEqualTo(existingAmazonStock().getId().toString())
+    ;
+
+//    webTestClient
+//            .post()
+//            .uri("/stocks/{uuid}/prices?from=2021-04-30&to=2021-05-31", existingAmazonStock().getId())
+//            .contentType(MediaType.APPLICATION_JSON)
+//            //.body(Mono.just(newNasdaqStockMarket), StockMarket.class)
+//            .exchange()
+//            .expectStatus()
+//            .isCreated()
+//            .expectBody()
+//            .isEmpty()
+//    ;
   }
 
 }

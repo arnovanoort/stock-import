@@ -106,16 +106,33 @@ public class StockServiceTest implements StockIntegrationTestData{
         // prepare
         var amazonStock = existingAmazonStock();
         when(stockRepository
-            .findStockByTicker(amazonStock.getTicker()))
-            .thenReturn(Mono.just(amazonStock));
+                .findStockByTicker(amazonStock.getTicker()))
+                .thenReturn(Mono.just(amazonStock));
 
         // execute
         var result = stockService.findStockByTicker(amazonStock.getTicker());
 
         // verify
         StepVerifier.create(result)
-            .assertNext(stock -> Assert.assertEquals(stock, amazonStock))
-            .verifyComplete();
+                .assertNext(stock -> Assert.assertEquals(stock, amazonStock))
+                .verifyComplete();
+    }
+
+    @Test
+    public void testGetStockByStockMarket() throws Exception {
+        // prepare
+        var amazonStock = existingAmazonStock();
+        when(stockRepository
+                .getStocksByMarket(amazonStock.getStockMarketId()))
+                .thenReturn(Flux.just(amazonStock));
+
+        // execute
+        var result = stockService.findStocksByStockMarket(amazonStock.getStockMarketId());
+
+        // verify
+        StepVerifier.create(result)
+                .assertNext(stock -> Assert.assertEquals(stock, amazonStock))
+                .verifyComplete();
     }
 
     @Test

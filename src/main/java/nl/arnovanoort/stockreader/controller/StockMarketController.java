@@ -1,11 +1,13 @@
 package nl.arnovanoort.stockreader.controller;
 
+import nl.arnovanoort.stockreader.domain.Stock;
 import nl.arnovanoort.stockreader.domain.StockMarket;
 import nl.arnovanoort.stockreader.service.StockMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -20,9 +22,10 @@ public class StockMarketController {
     private StockMarketService stockMarketService;
 
     @GetMapping("/stockmarkets/{uuid}")
-    private Mono<StockMarket> create(@PathVariable UUID uuid){
+    private Mono<StockMarket> get(@PathVariable UUID uuid){
         return stockMarketService.getStockMarket(uuid);
     }
+
 
     @PostMapping("/stockmarkets")
     private Mono<StockMarket> create(@RequestBody StockMarket stockMarket){

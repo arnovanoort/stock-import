@@ -12,8 +12,8 @@ import java.util.UUID;
 
 public interface StockRepository extends ReactiveCrudRepository<Stock, UUID> {
 
-    @Query("select * from stock_market where stock_market_id = $1")
-    Flux<StockMarket> getStockMarkets();
+    @Query("select * from stock where stock_market_id = $1")
+    Flux<StockMarket> getStockMarket(UUID stockMarketId);
 
     @Query("select * from stock where ticker = $1")
     Mono<Stock> findStockByTicker(String ticker);
@@ -29,4 +29,8 @@ public interface StockRepository extends ReactiveCrudRepository<Stock, UUID> {
         LocalDate dateUnListedNullable,
         UUID stockMarketId
     );
+
+    @Query("select * from stock where stock_market_id = $1 for update")
+    Flux<Stock> getStocksByMarket(UUID id);
+
 }

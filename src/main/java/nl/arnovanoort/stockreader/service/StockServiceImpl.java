@@ -61,6 +61,11 @@ public class StockServiceImpl implements StockService {
 //        .subscribe();
 //    }
 
+    @Override
+    public Flux<Stock> findStocksByStockMarket(UUID stockMarketUuid) {
+        return stockRepository.getStocksByMarket(stockMarketUuid);
+    }
+
     public Mono<Stock> findStockByTicker(String id) {
         return stockRepository.findStockByTicker(id);
     }
@@ -107,6 +112,7 @@ public class StockServiceImpl implements StockService {
     public Flux<Stock> importStocksLocal() {
         String location;
         try {
+
             var fileFlux = Flux.using(
                 () -> Files.lines(
                     Paths
@@ -123,6 +129,11 @@ public class StockServiceImpl implements StockService {
             e.printStackTrace();
             throw new StockReaderException("Could not read ticker file", e);
         }
+    }
+
+    @Override
+    public Flux<StockPrice> getStockPrices(UUID uuid, LocalDate from, LocalDate to) {
+        return stockPriceRepository.getByStockUuidAndDateWindow(uuid, from, to);
     }
 
     @Transactional

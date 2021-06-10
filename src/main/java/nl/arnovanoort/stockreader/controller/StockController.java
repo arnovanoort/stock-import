@@ -1,13 +1,18 @@
 package nl.arnovanoort.stockreader.controller;
 
 import nl.arnovanoort.stockreader.domain.Stock;
+import nl.arnovanoort.stockreader.domain.StockPrice;
 import nl.arnovanoort.stockreader.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -40,6 +45,20 @@ public class StockController {
         .map(createdStock -> {
             return ResponseEntity.created(URI.create("/stocks")).body(createdStock);
         });
+    }
+
+    @GetMapping("/stockmarkets/{uuid}/stocks")
+    private Flux<Stock> getStocksByStockMarket(@PathVariable UUID uuid){
+        return stockService.findStocksByStockMarket(uuid);
+    }
+
+    @GetMapping("/stocks/{uuid}/prices")
+    private Flux<StockPrice> getStocksPrices(
+            @PathVariable UUID uuid,
+            @RequestParam(value = "from") @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(value = "to") @DateTimeFormat(pattern="yyyy-MM-dd") Optional<LocalDate> endDate
+    ){
+        return stockService.getStockPrices(uuid, startDate, endDate.orElse(LocalDate.now()));
     }
 
     /**
